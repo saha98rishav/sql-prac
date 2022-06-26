@@ -38,16 +38,17 @@ join sales_2022 b on a.territory_id = b.territory_id
 -- ----------------------------------------------------------------------------------------------
 
 -- Q2) Fetch the % share of each product compared to its total market
+
 with prod_tot_sales as (
 	select
-		p.product_sku_name ,
 		p.market_name ,
+		p.product_sku_name ,
 		round(sum(csf.order_value), 2) "product_sales" 
 	from public.customer_sales_fact csf 
 	inner join public.product p on csf.product_sku_id = p.product_sku_id 
 	group by p.product_sku_name, p.market_name
 ),
-with market_tot_sales as (
+market_tot_sales as (
 	select
 		p2.market_name ,
 		round(sum(csf2.order_value), 2) "market_sales"
@@ -56,7 +57,13 @@ with market_tot_sales as (
 	group by p2.market_name
 )
 
-
+select 
+	pts.market_name,
+	pts.product_sku_name,
+	round(((pts.product_sales * 100) / mts.market_sales), 2) "market_share"
+from prod_tot_sales pts
+inner join market_tot_sales mts on pts.market_name = mts.market_name
+order by 1
 
 
 
